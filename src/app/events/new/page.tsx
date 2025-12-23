@@ -147,32 +147,19 @@ export default function CreateEventPage() {
   )
 }
 
-/* ✅ SINGLE, CORRECT FormField */
+
 function FormField({
   label,
-  htmlFor,
   children,
 }: {
   label: string
-  htmlFor: string
   children: React.ReactNode
 }) {
-  const labelId = `${htmlFor}-label`
-
   return (
-    <div>
-      <label
-        id={labelId}
-        htmlFor={htmlFor}
-        className="block text-sm text-gray-400 mb-1"
-      >
-        {label}
-      </label>
-      {React.isValidElement(children)
-        ? React.cloneElement(children, {
-            'aria-labelledby': labelId,
-          })
-        : children}
-    </div>
+    <label className="block text-sm text-gray-400">
+      <span className="mb-1 block">{label}</span>
+      {children}
+    </label>
   )
 }
+
