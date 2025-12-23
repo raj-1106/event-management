@@ -76,20 +76,20 @@ export default function CreateEventPage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <FormField label="Title" htmlFor="title">
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Title</span>
             <input
-              id="title"
               name="title"
               value={form.title}
               onChange={handleChange}
               required
               className="form-input"
             />
-          </FormField>
+          </label>
 
-          <FormField label="Description" htmlFor="description">
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Description</span>
             <textarea
-              id="description"
               name="description"
               value={form.description}
               onChange={handleChange}
@@ -97,22 +97,22 @@ export default function CreateEventPage() {
               rows={4}
               className="form-input"
             />
-          </FormField>
+          </label>
 
-          <FormField label="Location" htmlFor="location">
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Location</span>
             <input
-              id="location"
               name="location"
               value={form.location}
               onChange={handleChange}
               required
               className="form-input"
             />
-          </FormField>
+          </label>
 
-          <FormField label="Start Date & Time" htmlFor="startDate">
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Start Date & Time</span>
             <input
-              id="startDate"
               type="datetime-local"
               name="startDate"
               value={toDateTimeLocal(form.startDate)}
@@ -120,11 +120,11 @@ export default function CreateEventPage() {
               required
               className="form-input"
             />
-          </FormField>
+          </label>
 
-          <FormField label="End Date & Time" htmlFor="endDate">
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">End Date & Time</span>
             <input
-              id="endDate"
               type="datetime-local"
               name="endDate"
               value={toDateTimeLocal(form.endDate)}
@@ -132,7 +132,7 @@ export default function CreateEventPage() {
               required
               className="form-input"
             />
-          </FormField>
+          </label>
 
           <button
             type="submit"
@@ -146,20 +146,3 @@ export default function CreateEventPage() {
     </DashboardLayout>
   )
 }
-
-
-function FormField({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <label className="block text-sm text-gray-400">
-      <span className="mb-1 block">{label}</span>
-      {children}
-    </label>
-  )
-}
-
