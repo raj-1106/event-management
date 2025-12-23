@@ -44,5 +44,34 @@ The application allows users to create, view, edit, and delete events.
 - Responsive UI with basic accessibility considerations
 
 ---
+## ⚙️ Setup Instructions
 
-## 🗂 Project Structure
+Follow the steps below to run the project locally.
+
+### 1. Clone the repository
+```bash
+git clone (https://github.com/raj-1106/event-management)
+cd event-management
+npm install
+npx drizzle-kit push
+npm run dev
+```
+## ✅ 2. Environment Variables
+
+Add this section:
+
+```md
+## 🔐 Environment Variables
+
+The following environment variables are required to run the project:
+
+```env
+DATABASE_URL=your_neon_postgresql_connection_string```
+
+```
+## 📝 Assumptions & Notes
+
+- Authentication was intentionally omitted to keep the focus on core Events CRUD functionality.
+- The UI focuses on clarity, responsiveness, and accessibility with subtle animations.
+
+
