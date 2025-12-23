@@ -1,17 +1,34 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import React from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import DashboardLayout from '@/component/DashboardLayout'
 import { Event } from '@/types/event'
 
+type FormState = {
+  title: string
+  description: string
+  location: string
+  startDate: string
+  endDate: string
+}
+
+function toDateTimeLocal(value: string) {
+  if (!value) return ''
+  return value.slice(0, 16)
+}
+
 async function fetchEvent(id: string): Promise<Event> {
   const res = await fetch(`/api/events/${id}`)
-  if (!res.ok) throw new Error('Failed to fetch event')
+  if (!res.ok) {
+    throw new Error('Failed to fetch event')
+  }
   return res.json()
 }
 
-export default function EventDetailPage() {
+export default function EditEventPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -21,18 +38,63 @@ export default function EventDetailPage() {
     queryFn: () => fetchEvent(id),
   })
 
-  const deleteMutation = useMutation({
+  const [form, setForm] = useState<FormState>({
+    title: '',
+    description: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+  })
+
+  useEffect(() => {
+    if (data) {
+      setForm({
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      })
+    }
+  }, [data])
+
+  const mutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/events/${id}`, {
-        method: 'DELETE',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
       })
-      if (!res.ok) throw new Error('Failed to delete event')
+
+      if (!res.ok) {
+        throw new Error('Failed to update event')
+      }
+
+      return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] })
-      router.push('/events')
+      queryClient.invalidateQueries({ queryKey: ['event', id] })
+      router.push(`/events/${id}`)
     },
   })
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (new Date(form.endDate) < new Date(form.startDate)) {
+      alert('End date must be after start date')
+      return
+    }
+
+    mutation.mutate()
+  }
 
   if (isLoading) {
     return (
@@ -52,77 +114,94 @@ export default function EventDetailPage() {
 
   return (
     <DashboardLayout>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold">{data.title}</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            {new Date(data.startDate).toLocaleDateString()} • {data.location}
-          </p>
-        </div>
-
-        <button
-          onClick={() => router.push(`/events/${id}/edit`)}
-          className="bg-blue-600 hover:bg-blue-500 transition px-4 py-2 rounded-lg text-sm font-medium"
-        >
+      <div className="max-w-xl">
+        <h1 className="text-2xl font-semibold mb-6">
           Edit Event
-        </button>
-      </div>
+        </h1>
 
-      {/* Info cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <InfoCard
-          label="Location"
-          value={data.location}
-        />
-        <InfoCard
-          label="Start"
-          value={new Date(data.startDate).toLocaleString()}
-        />
-        <InfoCard
-          label="End"
-          value={new Date(data.endDate).toLocaleString()}
-        />
-      </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title */}
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Title</span>
+            <input
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </label>
 
-      {/* Description */}
-      <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6 mb-8">
-        <h2 className="text-lg font-medium mb-2">Description</h2>
-        <p className="text-gray-400 text-sm">
-          {data.description}
-        </p>
-      </div>
+          {/* Description */}
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Description</span>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              rows={4}
+              className="form-input"
+            />
+          </label>
 
-      {/* Delete */}
-      <button
-        onClick={() => {
-          if (confirm('Are you sure you want to delete this event?')) {
-            deleteMutation.mutate()
-          }
-        }}
-        disabled={deleteMutation.isPending}
-        className="bg-red-600 hover:bg-red-500 transition px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
-      >
-        {deleteMutation.isPending ? 'Deleting...' : 'Delete Event'}
-      </button>
+          {/* Location */}
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Location</span>
+            <input
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </label>
+
+          {/* Start Date */}
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">Start Date & Time</span>
+            <input
+              type="datetime-local"
+              name="startDate"
+              value={toDateTimeLocal(form.startDate)}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </label>
+
+          {/* End Date */}
+          <label className="block text-sm text-gray-400">
+            <span className="mb-1 block">End Date & Time</span>
+            <input
+              type="datetime-local"
+              name="endDate"
+              value={toDateTimeLocal(form.endDate)}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </label>
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="bg-blue-600 hover:bg-blue-500 transition px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {mutation.isPending ? 'Saving...' : 'Save Changes'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="border border-neutral-700 px-5 py-2 rounded-lg text-sm text-gray-300 hover:bg-neutral-800 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </DashboardLayout>
-  )
-}
-
-/* Small reusable info card */
-function InfoCard({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
-  return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-4">
-      <p className="text-xs text-gray-400">{label}</p>
-      <p className="text-sm font-medium mt-1 text-white">
-        {value}
-      </p>
-    </div>
   )
 }
