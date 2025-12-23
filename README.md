@@ -8,7 +8,7 @@ The application allows users to create, view, edit, and delete events.
 
 ## 🚀 Live Demo
 
-🔗 Live URL: https://event-management3.netlify.app/
+🔗 Live URL: https://eventManagement3.netlify.app/
 
 ---
 
